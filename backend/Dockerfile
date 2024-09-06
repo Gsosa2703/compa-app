@@ -4,30 +4,27 @@ FROM node:18.17.0
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the package.json and package-lock.json files
+# Copy only package.json and package-lock.json first for better layer caching
 COPY package.json package-lock.json ./
 
-# Install the dependencies
+# Install the dependencies (using --legacy-peer-deps to handle peer dependency conflicts)
 RUN npm install --legacy-peer-deps
 
-# Copy the tsconfig.json and ormconfig.json files into the container
-COPY tsconfig.json ormconfig.json ./
-
-# Copy the rest of the backend code
+# Copy the rest of the backend source code and configuration files
+COPY tsconfig.json ./
+COPY ormconfig.json ./
 COPY ./src ./src
 
-# Compile TypeScript to JavaScript
+# Compile TypeScript to JavaScript (only if the build command is defined in your package.json)
 RUN npm run build
 
-# Expose port 5000
+# Expose port 5000 for the backend
 EXPOSE 5000
 
-# Set environment variables if needed
-ENV DATABASE_HOST=postgres
-ENV DATABASE_PORT=5432
-ENV DATABASE_USER=clercminator
-ENV DATABASE_PASSWORD=123
-ENV DATABASE_NAME=compa-app
+# Set environment variables through the Docker environment (use .env file for dynamic vars)
+# It's better to rely on a .env file for variables rather than hardcoding here.
+# For example, Docker Compose will handle passing the .env variables.
+ENV NODE_ENV=production
 
-# Run the compiled backend server (JavaScript files)
+# Start the application using the built JavaScript files in the dist folder
 CMD ["npm", "start"]

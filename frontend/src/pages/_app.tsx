@@ -1,54 +1,54 @@
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { useEffect, useState } from 'react';
-import { AppProps } from 'next/app'; // Import types for Next.js
+import { AppProps } from 'next/app'; 
+import Header from '../components/Header'; 
+import Footer from '../components/Footer'; 
 
-// This function wraps your entire application with ApolloProvider
 function MyApp({ Component, pageProps }: AppProps) {
-  const [csrfToken, setCsrfToken] = useState<string>(''); // Explicitly type the state as string
-  const [client, setClient] = useState<ApolloClient<any> | null>(null); // Type the Apollo Client
+  const [csrfToken, setCsrfToken] = useState<string>(''); 
+  const [client, setClient] = useState<ApolloClient<any> | null>(null); 
 
-  // Get the CSRF token from the cookie and store it in state
   useEffect(() => {
-    // Get the XSRF token from the browser cookies
     const token = document.cookie
       .split('; ')
       .find((row) => row.startsWith('XSRF-TOKEN='))
       ?.split('=')[1];
 
     if (token) {
-      setCsrfToken(token); // Set the token to state
-      console.log('Extracted CSRF Token:', token); // Log to check if it's extracted correctly
+      setCsrfToken(token); 
+      console.log('Extracted CSRF Token:', token); 
     } else {
       console.log('CSRF Token not found in cookies.');
     }
   }, []);
 
-  // Initialize Apollo Client after the CSRF token is fetched
   useEffect(() => {
     if (csrfToken) {
       const newClient = new ApolloClient({
-        uri: 'http://localhost:5000/graphql', // URL for your backend GraphQL API
-        cache: new InMemoryCache(), // Enables caching for better performance
+        uri: 'http://localhost:5000/graphql',
+        cache: new InMemoryCache(), 
         headers: {
-          'X-CSRF-TOKEN': csrfToken || '', // Send CSRF token with every request
+          'X-CSRF-TOKEN': csrfToken || '', 
         },
-        credentials: 'include', // Ensure cookies (JWT and CSRF token) are sent with requests
+        credentials: 'include', 
       });
 
-      setClient(newClient); // Set the Apollo Client after initialization
+      setClient(newClient); 
     }
   }, [csrfToken]);
 
-  // If Apollo Client is not ready yet, don't render the app
   if (!client) {
     return <div>Loading...</div>;
   }
 
   return (
     <ApolloProvider client={client}>
+      <Header />
       <Component {...pageProps} />
+      <Footer />
     </ApolloProvider>
   );
 }
 
 export default MyApp;
+
