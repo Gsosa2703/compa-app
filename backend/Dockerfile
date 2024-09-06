@@ -10,12 +10,24 @@ COPY package.json package-lock.json ./
 # Install the dependencies
 RUN npm install --legacy-peer-deps
 
+# Copy the tsconfig.json and ormconfig.json files into the container
+COPY tsconfig.json ormconfig.json ./
 
 # Copy the rest of the backend code
-COPY . .
+COPY ./src ./src
+
+# Compile TypeScript to JavaScript
+RUN npm run build
 
 # Expose port 5000
 EXPOSE 5000
 
-# Run the backend server
-CMD ["npm", "run", "dev"]
+# Set environment variables if needed
+ENV DATABASE_HOST=postgres
+ENV DATABASE_PORT=5432
+ENV DATABASE_USER=clercminator
+ENV DATABASE_PASSWORD=123
+ENV DATABASE_NAME=compa-app
+
+# Run the compiled backend server (JavaScript files)
+CMD ["npm", "start"]

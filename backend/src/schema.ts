@@ -1,14 +1,10 @@
-const {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLSchema,
-  GraphQLList,
-} = require("graphql");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+import { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLList } from "graphql";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { Request, Response } from "express";
 
 // Dummy user data (replace with PostgreSQL later)
-const users = [];
+const users: { id: string; name: string; email: string; password: string }[] = [];
 
 // Define User Type
 const UserType = new GraphQLObjectType({
@@ -21,7 +17,7 @@ const UserType = new GraphQLObjectType({
   },
 });
 
-// Root Mutation: Signup and Login
+// Define Root Mutation: Signup and Login
 const RootMutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
@@ -33,7 +29,7 @@ const RootMutation = new GraphQLObjectType({
         email: { type: GraphQLString },
         password: { type: GraphQLString }
       },
-      async resolve(parent, args, context) {
+      async resolve(parent: any, args: any, context: { req: Request, res: Response }) {
         const userExists = users.find(user => user.email === args.email);
         if (userExists) {
           throw new Error('User already exists');
@@ -53,8 +49,8 @@ const RootMutation = new GraphQLObjectType({
 
         // Set cookie with HttpOnly and Secure flags
         context.res.cookie('token', token, {
-          httpOnly: true, // Prevent JavaScript access
-          secure: process.env.NODE_ENV === 'production', // Only use Secure flag in production (HTTPS)
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
           maxAge: 3600000, // Token expires in 1 hour
         });
 
@@ -69,7 +65,7 @@ const RootMutation = new GraphQLObjectType({
         email: { type: GraphQLString },
         password: { type: GraphQLString }
       },
-      async resolve(parent, args, context) {
+      async resolve(parent: any, args: any, context: { req: Request, res: Response }) {
         const user = users.find(user => user.email === args.email);
         if (!user) {
           throw new Error('User not found');
@@ -96,7 +92,6 @@ const RootMutation = new GraphQLObjectType({
   }
 });
 
-
 // Define Root Query: For testing purposes, let's query all users
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
@@ -111,7 +106,7 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
-module.exports = new GraphQLSchema({
+export default new GraphQLSchema({
   query: RootQuery,
   mutation: RootMutation,
 });

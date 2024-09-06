@@ -18,3 +18,4 @@ EXPOSE 3000
 
 # Run the frontend server
 CMD ["npm", "run", "dev"]
+

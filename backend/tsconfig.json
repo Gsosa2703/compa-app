@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "target": "ES6",                     // Required for decorators
+      "module": "commonjs",
+      "strict": true,
+      "experimentalDecorators": true,      // Enables decorators
+      "emitDecoratorMetadata": true,       // Enables metadata for decorators
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "allowJs": true,
+      "jsx": "preserve",
+      "skipLibCheck": true,
+      "outDir": "./dist"                   // Output directory for compiled files
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules"]
+  }
+  
