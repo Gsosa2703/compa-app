@@ -1,28 +1,45 @@
-import React from 'react';
-import Link from 'next/link';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Dashboard() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = document.cookie.split('; ').find((row) => row.startsWith('token='));
+    if (!token) {
+      router.push('/login'); // Redirect to login if no token
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-10 rounded-lg shadow-lg text-center w-1/2">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Dashboard</h1>
-        <p className="text-gray-700 mb-6">Manage your account, settings, and more!</p>
-        <div className="grid grid-cols-3 gap-6">
-          <Link href="/profile" legacyBehavior>
-            <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
-              Profile
-            </button>
-          </Link>
-          <Link href="/settings" legacyBehavior>
-            <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
-              Settings
-            </button>
-          </Link>
-          <Link href="/login" legacyBehavior>
-            <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
-              Logout
-            </button>
-          </Link>
+    <div className="min-h-screen bg-secondary p-10 animate-fadeIn">
+      <div className="bg-white p-8 rounded-lg shadow-custom-dark max-w-4xl mx-auto">
+        <h1 className="text-5xl font-bold text-primary mb-8 text-center">Dashboard</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-6 bg-gray-100 rounded shadow-md">
+            <h2 className="text-2xl font-semibold mb-2">Overview</h2>
+            <p className="text-gray-600">
+              Check your activity, stats, and other important details here.
+            </p>
+          </div>
+          <div className="p-6 bg-gray-100 rounded shadow-md">
+            <h2 className="text-2xl font-semibold mb-2">Recent Orders</h2>
+            <p className="text-gray-600">
+              View your latest orders and purchase history.
+            </p>
+          </div>
+          <div className="p-6 bg-gray-100 rounded shadow-md">
+            <h2 className="text-2xl font-semibold mb-2">Messages</h2>
+            <p className="text-gray-600">
+              Check new messages from sellers or customers.
+            </p>
+          </div>
+          <div className="p-6 bg-gray-100 rounded shadow-md">
+            <h2 className="text-2xl font-semibold mb-2">Account Settings</h2>
+            <p className="text-gray-600">
+              Update your account settings and manage subscriptions.
+            </p>
+          </div>
         </div>
       </div>
     </div>
