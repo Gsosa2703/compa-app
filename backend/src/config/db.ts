@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DATABASE_NAME || 'compa-app',
   synchronize: true, // Automatically sync entity with database, disable in production
   logging: true,
-  entities: [__dirname + '/../entity/**/*.ts'],
+  entities: [__dirname + '/../entity/**/*.{js,ts}'],
   migrations: [__dirname + '/../migration/**/*.ts'],
 });
 

@@ -40,7 +40,7 @@ app.use(csrfProtection);
 
 // Middleware to expose CSRF token to the frontend
 app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log("GENERATING TOKEN.....");
+  console.log("# GENERATING TOKEN .....");
   console.log("Received XSRF-TOKEN from frontend:", req.cookies["XSRF-TOKEN"]);
   const csrfToken = req.csrfToken(); // Generate CSRF token
   res.cookie("XSRF-TOKEN", csrfToken, {
@@ -48,12 +48,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     secure: process.env.NODE_ENV === "production", // Set 'secure' flag only in production
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // Use 'Lax' in dev, 'Strict' in production // Protect against CSRF attacks
   });
+  console.log("FINISHING CSRF TOKEN.....");
   next();
 });
 
 // JWT Middleware for Authorization
 app.use((req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.token;
+  console.log(token, 'JWT TOKEN')
   if (token) {
     try {
       const decoded = jwt.verify(
@@ -74,14 +76,21 @@ app.get("/csrf-token", (req, res) => {
 });
 
 // GraphQL endpoint
-app.use(
-  "/graphql",
+app.use(`/graphql`, (req, res) => {
   graphqlHTTP({
-    schema: schema, // Use the GraphQL schema
-    graphiql: true, // Enable the GraphiQL interface for testing in browser
-    context: { req: Request, res: Response }, // Pass request and response to context
-  })
-);
+    schema: schema,
+    graphiql: true,
+    context: req,
+    customFormatErrorFn: (error) => {
+      console.error('[customFormatErrorFn] error', error)
+      console.error(error.stack)
+      const statusCode = error?.extensions?.statusCode as number || 500 
+
+      res.status(statusCode)
+      return error
+    }
+  })(req, res)
+});
 
 // Handle CSRF token errors
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

@@ -15,15 +15,6 @@ const Login = () => {
   useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
-        // Request to fetch CSRF token
-        const response = await fetch("http://localhost:5000/csrf-token", {
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch CSRF token");
-        }
-
         const token = document.cookie
           .split("; ")
           .find((row) => row.startsWith("XSRF-TOKEN="))
