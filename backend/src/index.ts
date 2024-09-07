@@ -76,11 +76,11 @@ app.get("/csrf-token", (req, res) => {
 });
 
 // GraphQL endpoint
-app.use(`/graphql`, (req, res) => {
+app.use(`/graphql`, (req: Request, res: Response) => {
   graphqlHTTP({
     schema: schema,
     graphiql: true,
-    context: req,
+    context:  { req: Request, res: Response },
     customFormatErrorFn: (error) => {
       console.error('[customFormatErrorFn] error', error)
       console.error(error.stack)

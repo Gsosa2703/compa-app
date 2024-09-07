@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
   synchronize: true, // Automatically sync entity with database, disable in production
   logging: true,
   entities: [__dirname + '/../entity/**/*.{js,ts}'],
-  migrations: [__dirname + '/../migration/**/*.ts'],
+  migrations: [__dirname + '/../migration/**/*.{js,ts}'],
 });
 
 export const initializeDatabase = async (retries = 5, delay = 5000) => {
