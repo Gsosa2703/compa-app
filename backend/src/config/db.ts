@@ -1,13 +1,14 @@
 import { DataSource } from 'typeorm';
+import { User } from "./entity/User";
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DATABASE_HOST || 'localhost',
   port: Number(process.env.DATABASE_PORT) || 5432,
-  username: process.env.DATABASE_USER || 'root',
-  password: process.env.DATABASE_PASSWORD || 'password',
-  database: process.env.DATABASE_NAME || 'mydb',
-  synchronize: true,
+  username: process.env.DATABASE_USER || 'clercminator',
+  password: process.env.DATABASE_PASSWORD || '123',
+  database: process.env.DATABASE_NAME || 'compa-app',
+  synchronize: true, // Automatically sync entity with database, disable in production
   logging: true,
   entities: [__dirname + '/../entity/**/*.ts'],
   migrations: [__dirname + '/../migration/**/*.ts'],

@@ -2,9 +2,9 @@ import { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLList } from "gr
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
-
-// Dummy user data (replace with PostgreSQL later)
-const users: { id: string; name: string; email: string; password: string }[] = [];
+import { createError, handleError } from "./utils/errorHandler"; // Import the error handler
+import { AppDataSource } from "./config/db"; // Import your database connection
+import { User } from "./entity/User"; // Import the User entity
 
 // Define User Type
 const UserType = new GraphQLObjectType({
@@ -27,34 +27,43 @@ const RootMutation = new GraphQLObjectType({
       args: {
         name: { type: GraphQLString },
         email: { type: GraphQLString },
-        password: { type: GraphQLString }
+        password: { type: GraphQLString },
       },
       async resolve(parent: any, args: any, context: { req: Request, res: Response }) {
-        const userExists = users.find(user => user.email === args.email);
-        if (userExists) {
-          throw new Error('User already exists');
+        try {
+          // Check if the user already exists
+          const userRepo = AppDataSource.getRepository(User);
+          const userExists = await userRepo.findOne({ where: { email: args.email } });
+
+          if (userExists) {
+            throw createError('User already exists', 409, { email: args.email });
+          }
+
+          const hashedPassword = await bcrypt.hash(args.password, 12);
+          const newUser = userRepo.create({
+            name: args.name,
+            email: args.email,
+            password: hashedPassword,
+          });
+
+          await userRepo.save(newUser);
+
+          // Generate JWT Token
+          const token = jwt.sign({ userId: newUser.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+
+          // Set cookie with HttpOnly and Secure flags
+          context.res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3600000, // Token expires in 1 hour
+            sameSite: 'lax', // Prevent CSRF
+          });
+
+          return newUser;
+        } catch (error) {
+          const handledError = handleError(error);
+          throw new Error(handledError.message);
         }
-
-        const hashedPassword = await bcrypt.hash(args.password, 10);
-        const newUser = {
-          id: String(users.length + 1),
-          name: args.name,
-          email: args.email,
-          password: hashedPassword,
-        };
-        users.push(newUser);
-
-        // Generate JWT Token
-        const token = jwt.sign({ userId: newUser.id }, 'your_secret_key', { expiresIn: '1h' });
-
-        // Set cookie with HttpOnly and Secure flags
-        context.res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 3600000, // Token expires in 1 hour
-        });
-
-        return newUser;
       }
     },
 
@@ -63,30 +72,38 @@ const RootMutation = new GraphQLObjectType({
       type: UserType,
       args: {
         email: { type: GraphQLString },
-        password: { type: GraphQLString }
+        password: { type: GraphQLString },
       },
       async resolve(parent: any, args: any, context: { req: Request, res: Response }) {
-        const user = users.find(user => user.email === args.email);
-        if (!user) {
-          throw new Error('User not found');
+        try {
+          const userRepo = AppDataSource.getRepository(User);
+          const user = await userRepo.findOne({ where: { email: args.email } });
+
+          if (!user) {
+            throw createError('User not found', 404, { email: args.email });
+          }
+
+          const isPasswordValid = await bcrypt.compare(args.password, user.password);
+          if (!isPasswordValid) {
+            throw createError('Invalid credentials', 401);
+          }
+
+          // Generate JWT Token
+          const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+
+          // Set cookie with HttpOnly and Secure flags
+          context.res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3600000, // 1 hour
+            sameSite: 'lax', // Prevent CSRF
+          });
+
+          return user;
+        } catch (error) {
+          const handledError = handleError(error);
+          throw new Error(handledError.message);
         }
-
-        const isPasswordValid = await bcrypt.compare(args.password, user.password);
-        if (!isPasswordValid) {
-          throw new Error('Invalid credentials');
-        }
-
-        // Generate JWT Token
-        const token = jwt.sign({ userId: user.id }, 'your_secret_key', { expiresIn: '1h' });
-
-        // Set cookie with HttpOnly and Secure flags
-        context.res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 3600000, // 1 hour
-        });
-
-        return user;
       }
     }
   }
@@ -99,8 +116,15 @@ const RootQuery = new GraphQLObjectType({
     // List users (for testing purposes)
     users: {
       type: new GraphQLList(UserType),
-      resolve() {
-        return users;
+      async resolve() {
+        try {
+          const userRepo = AppDataSource.getRepository(User);
+          const users = await userRepo.find();
+          return users;
+        } catch (error) {
+          const handledError = handleError(error);
+          throw new Error(handledError.message);
+        }
       },
     },
   },
@@ -110,3 +134,4 @@ export default new GraphQLSchema({
   query: RootQuery,
   mutation: RootMutation,
 });
+
