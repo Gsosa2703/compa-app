@@ -36,6 +36,7 @@ app.use(csrfProtection);
 
 // Middleware to expose CSRF token to the frontend
 app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log('GENERATING TOKEN.....')
   const csrfToken = req.csrfToken(); // Generate CSRF token
   res.cookie('XSRF-TOKEN', csrfToken, {
     httpOnly: false, // Allow frontend to access token
@@ -57,6 +58,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     }
   }
   next();
+});
+
+app.get('/csrf-token', (req, res) => {
+  res.json({ csrfToken: "Token created" });
 });
 
 // GraphQL endpoint
