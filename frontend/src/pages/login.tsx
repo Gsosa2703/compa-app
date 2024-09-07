@@ -1,59 +1,93 @@
-import { useState } from 'react';
-import { useMutation } from '@apollo/client';
-import LOGIN_MUTATION from '../graphql/mutations/login';
+import React, { useState, useEffect } from "react";
+import { useMutation } from "@apollo/client";
+import LOGIN_MUTATION from "../graphql/mutations/login";
+import { useRouter } from "next/router";
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [csrfToken, setCsrfToken] = useState<string>("");
 
-  const [login] = useMutation(LOGIN_MUTATION, {
-    variables: { email, password },
-  });
+  const [loginMutation, { data, loading, error }] = useMutation(LOGIN_MUTATION);
+  const router = useRouter();
 
+  // Fetch the CSRF token when the component mounts
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const token = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("XSRF-TOKEN="))
+          ?.split("=")[1];
+
+        if (token) {
+          setCsrfToken(token);
+        } else {
+          console.log("CSRF Token not found.");
+        }
+      } catch (err) {
+        console.error("Error fetching CSRF token:", err);
+      }
+    };
+
+    fetchCsrfToken();
+  }, []);
+
+  // Perform login when the form is submitted
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      await login();
-      alert('Login successful');
+      // Execute the GraphQL mutation for login with CSRF token
+      const response = await loginMutation({
+        variables: { email, password },
+        context: {
+          headers: {
+            "X-CSRF-TOKEN": csrfToken, // Attach CSRF token
+          },
+        },
+      });
+
+      if (response.data.login) {
+        console.log("Login successful:", response.data.login);
+        router.push("/dashboard"); // Redirect to dashboard on successful login
+      }
     } catch (err) {
-      alert('Error during login');
+      console.error("Login failed:", err);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-        <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <label className="block text-gray-700">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter your email"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter your password"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105"
-          >
-            Login
-          </button>
-        </form>
-      </div>
+    <div className="login-container">
+      <h1>Login</h1>
+      <form onSubmit={handleLogin}>
+        <label>
+          Email:
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          Password:
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </label>
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
+      </form>
+      {error && <p>Error: {error.message}</p>}
     </div>
   );
-}
+};
+
+export default Login;
+
 

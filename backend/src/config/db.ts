@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { User } from "./entity/User";
+import { User } from "../entity/User";
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -10,8 +10,8 @@ export const AppDataSource = new DataSource({
   database: process.env.DATABASE_NAME || 'compa-app',
   synchronize: true, // Automatically sync entity with database, disable in production
   logging: true,
-  entities: [__dirname + '/../entity/**/*.ts'],
-  migrations: [__dirname + '/../migration/**/*.ts'],
+  entities: [__dirname + '/../entity/**/*.{js,ts}'],
+  migrations: [__dirname + '/../migration/**/*.{js,ts}'],
 });
 
 export const initializeDatabase = async (retries = 5, delay = 5000) => {

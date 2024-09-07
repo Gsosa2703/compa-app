@@ -31,6 +31,7 @@ const RootMutation = new GraphQLObjectType({
       },
       async resolve(parent: any, args: any, context: { req: Request, res: Response }) {
         try {
+          console.info('SIGN UP MUTATION')
           // Check if the user already exists
           const userRepo = AppDataSource.getRepository(User);
           const userExists = await userRepo.findOne({ where: { email: args.email } });
@@ -77,6 +78,7 @@ const RootMutation = new GraphQLObjectType({
       async resolve(parent: any, args: any, context: { req: Request, res: Response }) {
         try {
           const userRepo = AppDataSource.getRepository(User);
+          // Convert id to number since User expects number
           const user = await userRepo.findOne({ where: { email: args.email } });
 
           if (!user) {
@@ -134,4 +136,3 @@ export default new GraphQLSchema({
   query: RootQuery,
   mutation: RootMutation,
 });
-
