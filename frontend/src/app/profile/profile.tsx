@@ -1,3 +1,4 @@
+"use client";  // This ensures the component is treated as a Client Component
 import React from 'react';
 import { gql, useQuery } from '@apollo/client';
 

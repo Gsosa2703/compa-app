@@ -1,6 +1,7 @@
+"use client";  // This ensures the component is treated as a Client Component
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
-import SIGNUP_MUTATION from "../graphql/mutations/signup";
+import SIGNUP_MUTATION from "../../graphql/signup";
 
 export default function Signup() {
   const [email, setEmail] = useState("");

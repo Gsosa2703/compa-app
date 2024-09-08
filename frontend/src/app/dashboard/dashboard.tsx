@@ -1,3 +1,4 @@
+"use client";  // This ensures the component is treated as a Client Component
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
@@ -9,7 +10,7 @@ export default function Dashboard() {
     if (!token) {
       router.push('/login'); // Redirect to login if no token
     }
-  }, []);
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-secondary p-10 animate-fadeIn">

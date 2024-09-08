@@ -1,6 +1,7 @@
+"use client";  // This ensures the component is treated as a Client Component
 import React, { useState, useEffect } from "react";
 import { useMutation } from "@apollo/client";
-import LOGIN_MUTATION from "../graphql/mutations/login";
+import LOGIN_MUTATION from "../../graphql/login";
 import { useRouter } from "next/router";
 
 const Login = () => {
