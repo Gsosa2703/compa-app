@@ -7,7 +7,7 @@ import { graphqlHTTP } from "express-graphql";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
-import csrf from "csurf";
+//import csrf from "csurf";
 import morgan from "morgan";
 
 import { errorMiddleware } from "./middleware/errorMiddleware";  // Error handling middleware
@@ -35,8 +35,8 @@ app.use(morgan("dev"));
 // Parse cookies
 app.use(cookieParser());
 
-// CSRF Protection Middleware Setup
-const csrfProtection = csrf({ cookie: true });  // CSRF tokens in cookies
+// // CSRF Protection Middleware Setup
+// const csrfProtection = csrf({ cookie: true });  // CSRF tokens in cookies
 
 // Apply rate-limiting to API routes
 app.use("/api", apiRateLimiter);
@@ -48,15 +48,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Expose CSRF token only for specific route
-app.get("/csrf-token", csrfProtection, (req: Request, res: Response) => {
-  const csrfToken = req.csrfToken();  // Generate CSRF token
-  res.cookie("XSRF-TOKEN", csrfToken, {
-    httpOnly: false,  // Allow frontend to access token
-    secure: process.env.NODE_ENV === "production",  // Secure cookie in production
-    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",  // Use 'Lax' in dev, 'Strict' in production
-  });
-  res.status(200).json({ csrfToken });
-});
+// app.get("/csrf-token", csrfProtection, (req: Request, res: Response) => {
+//   const csrfToken = req.csrfToken();  // Generate CSRF token
+//   res.cookie("XSRF-TOKEN", csrfToken, {
+//     httpOnly: false,  // Allow frontend to access token
+//     secure: process.env.NODE_ENV === "production",  // Secure cookie in production
+//     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",  // Use 'Lax' in dev, 'Strict' in production
+//   });
+//   res.status(200).json({ csrfToken });
+// });
 
 // JWT Middleware for Authorization
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -88,13 +88,13 @@ app.use(`/graphql`, (req: Request, res: Response) => {
 });
 
 // Handle CSRF token errors
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  if (err.code === "EBADCSRFTOKEN") {
-    logger.error("Invalid CSRF token", { token: req.cookies["XSRF-TOKEN"] });  // Log CSRF token errors
-    return res.status(403).json({ message: "Invalid CSRF token" });
-  }
-  next(err);
-});
+// app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+//   if (err.code === "EBADCSRFTOKEN") {
+//     logger.error("Invalid CSRF token", { token: req.cookies["XSRF-TOKEN"] });  // Log CSRF token errors
+//     return res.status(403).json({ message: "Invalid CSRF token" });
+//   }
+//   next(err);
+// });
 
 // Global error handler middleware (log errors with Winston)
 app.use(errorMiddleware);

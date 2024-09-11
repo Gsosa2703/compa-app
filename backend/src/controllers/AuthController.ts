@@ -4,7 +4,7 @@ import { AuthService } from "../services/AuthService";
 export const AuthController = {
   async signUp(req: Request, res: Response) {
     try {
-      const token = await AuthService.signUp(req.body.email, req.body.password);
+      const token = await AuthService.signUp(req.body.name, req.body.email, req.body.password);
       res.cookie("token", token, { httpOnly: true });
       res.status(201).json({ message: "User created" });
     } catch (error) {

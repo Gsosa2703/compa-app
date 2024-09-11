@@ -1,33 +1,27 @@
 // src/graphql/mutations/userMutations.ts
 import { GraphQLString, GraphQLNonNull } from "graphql";
 import { UserType } from "../types/UserType";
+import { AuthSignUpType } from "../types/AuthType";
 import { AuthService } from "../../services/AuthService";
-import { body, validationResult } from "express-validator";
 
 export const userMutations = {
   signUp: {
-    type: UserType,
+    type: AuthSignUpType,
     args: {
       name: { type: new GraphQLNonNull(GraphQLString) },
       email: { type: new GraphQLNonNull(GraphQLString) },
       password: { type: new GraphQLNonNull(GraphQLString) },
     },
     async resolve(parent: any, args: any, context: any) {
+
+      console.info(args, 'ARGS BACKEND [SIGNUP]')
+
       const { name, email, password } = args;
 
-      // Apply validation rules for sign-up manually
-      await body("name").isLength({ min: 3, max: 50 }).withMessage("Name must be between 3 and 50 characters").run(context.req);
-      await body("email").isEmail().withMessage("Email must be valid").run(context.req);
-      await body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters").run(context.req);
-
-      // Check for validation errors
-      const errors = validationResult(context.req);
-      if (!errors.isEmpty()) {
-        throw new Error(JSON.stringify(errors.array()));  // Throw error if validation fails
-      }
-
       // Proceed with user sign-up if validation passes
-      const newUser = await AuthService.signUp(email, password);
+      const newUser = await AuthService.signUp(name, email, password);
+
+      console.log(newUser, 'USER SIGNED UP')
       return newUser;
     },
   },

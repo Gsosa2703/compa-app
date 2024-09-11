@@ -3,37 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";  // Use `next/navigation` for App Router
-import LOGIN_MUTATION from "../../graphql/login";
+import LOGIN_MUTATION from "../../src/graphql/login";
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [csrfToken, setCsrfToken] = useState<string>("");
+ // const [csrfToken, setCsrfToken] = useState<string>("");
 
   const [loginMutation, { data, loading, error }] = useMutation(LOGIN_MUTATION);
   const router = useRouter();
-
-  // Fetch the CSRF token when the component mounts
-  useEffect(() => {
-    const fetchCsrfToken = async () => {
-      try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("XSRF-TOKEN="))
-          ?.split("=")[1];
-
-        if (token) {
-          setCsrfToken(token);
-        } else {
-          console.error("CSRF Token not found.");
-        }
-      } catch (err) {
-        console.error("Error fetching CSRF token:", err);
-      }
-    };
-
-    fetchCsrfToken();
-  }, []);
 
   // Handle login form submission
   const handleLogin = async (e: React.FormEvent) => {
@@ -45,7 +23,7 @@ const Login = () => {
         variables: { email, password },
         context: {
           headers: {
-            "X-CSRF-TOKEN": csrfToken, // Attach CSRF token to headers
+            "X-CSRF-TOKEN": "", // Attach CSRF token to headers
           },
         },
       });

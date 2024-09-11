@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export class AuthService {
-  static async signUp(email: string, password: string) {
+  static async signUp(name: string, email: string, password: string) {
     const userRepository = AppDataSource.getRepository(User);
 
     const existingUser = await userRepository.findOneBy({ email });
@@ -14,11 +14,11 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = userRepository.create({ email, password: hashedPassword });
+    const newUser = userRepository.create({ name, email, password: hashedPassword });
     await userRepository.save(newUser);
 
     const token = jwt.sign({ userId: newUser.id }, process.env.JWT_SECRET || 'your_secret_key');
-    return token;
+    return { user: newUser, token };
   }
 
   static async login(email: string, password: string) {

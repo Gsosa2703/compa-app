@@ -5,13 +5,6 @@ import { useRouter } from 'next/router';
 export default function Dashboard() {
   const router = useRouter();
 
-  useEffect(() => {
-    const token = document.cookie.split('; ').find((row) => row.startsWith('token='));
-    if (!token) {
-      router.push('/login'); // Redirect to login if no token
-    }
-  }, [router]);
-
   return (
     <div className="min-h-screen bg-secondary p-10 animate-fadeIn">
       <div className="bg-white p-8 rounded-lg shadow-custom-dark max-w-4xl mx-auto">
